@@ -1,0 +1,563 @@
+.output-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4A90E2;
+        }<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表達式轉換與計算工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #87CEEB;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .left-panel, .right-panel {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .left-panel {
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4A90E2;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: 2px solid #4A90E2;
+            background: white;
+            color: #4A90E2;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        button:hover {
+            background: #4A90E2;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+
+        button.active {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .input-area {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-area:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .right-panel {
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .output-content {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #212529;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+        }
+
+        .output-content.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .success {
+            color: #4A90E2;
+            font-weight: 600;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .left-panel {
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="section">
+                <div class="section-title">請選擇模式</div>
+                <div class="button-group">
+                    <button class="mode-btn active" data-mode="1">正數個位數輸入</button>
+                    <button class="mode-btn" data-mode="7">負數個位數輸入</button>
+                    <button class="mode-btn" data-mode="6">正數多位數輸入</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">請選擇功能</div>
+                <div class="button-group">
+                    <button class="func-btn active" data-func="1">infix 轉 postfix</button>
+                    <button class="func-btn" data-func="2">postfix 計算結果</button>
+                    <button class="func-btn" data-func="3">infix 計算結果</button>
+                    <button class="func-btn" data-func="4">infix 轉 prefix</button>
+                    <button class="func-btn" data-func="5">prefix 計算結果</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">請填寫輸入</div>
+                <textarea class="input-area" id="inputExpression" placeholder="請輸入表達式，例如: 3 + 5 * ( 2 - 8 )"></textarea>
+                <button class="submit-btn" onclick="processExpression()">送出</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="output-title">輸出結果</div>
+            <div class="output-content empty" id="output">等待輸入...</div>
+        </div>
+    </div>
+
+    <script>
+        let selectedMode = 1;
+        let selectedFunc = 1;
+
+        // Mode button handlers
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedMode = parseInt(this.dataset.mode);
+            });
+        });
+
+        // Function button handlers
+        document.querySelectorAll('.func-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.func-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedFunc = parseInt(this.dataset.func);
+            });
+        });
+
+        // Stack implementation
+        class Stack {
+            constructor() {
+                this.items = [];
+            }
+            push(element) {
+                this.items.push(element);
+            }
+            pop() {
+                if (this.items.length === 0) return null;
+                return this.items.pop();
+            }
+            peek() {
+                return this.items[this.items.length - 1];
+            }
+            isEmpty() {
+                return this.items.length === 0;
+            }
+        }
+
+        function isOperator(token) {
+            return ['+', '-', '*', '/', 'N'].includes(token);
+        }
+
+        function precedence(op) {
+            if (op === 'N') return 3;
+            if (op === '+' || op === '-') return 1;
+            if (op === '*' || op === '/') return 2;
+            return 0;
+        }
+
+        function isNumber(token) {
+            return /^\d+$/.test(token);
+        }
+
+        function validateInfix(tokens) {
+            let parenCount = 0;
+            let expectOperand = true;
+            
+            for (let i = 0; i < tokens.length; i++) {
+                if (tokens[i] === '(') {
+                    parenCount++;
+                    expectOperand = true;
+                } else if (tokens[i] === ')') {
+                    parenCount--;
+                    if (parenCount < 0 || expectOperand) return false;
+                    expectOperand = false;
+                } else if (isOperator(tokens[i]) && tokens[i] !== 'N') {
+                    if (expectOperand) return false;
+                    expectOperand = true;
+                } else if (isNumber(tokens[i]) || tokens[i] === 'N') {
+                    if (!expectOperand && tokens[i] !== 'N') return false;
+                    expectOperand = false;
+                } else {
+                    return false;
+                }
+            }
+            
+            return parenCount === 0 && !expectOperand;
+        }
+
+        function infixToPostfix(tokens) {
+            if (!validateInfix(tokens)) {
+                throw new Error("invalid expression");
+            }
+            
+            const stack = new Stack();
+            const result = [];
+            
+            for (let token of tokens) {
+                if (isNumber(token)) {
+                    result.push(token);
+                } else if (token === '(') {
+                    stack.push(token);
+                } else if (token === ')') {
+                    while (!stack.isEmpty() && stack.peek() !== '(') {
+                        result.push(stack.pop());
+                    }
+                    if (!stack.isEmpty()) stack.pop();
+                } else if (isOperator(token)) {
+                    while (!stack.isEmpty() && stack.peek() !== '(' && 
+                           precedence(stack.peek()) >= precedence(token)) {
+                        result.push(stack.pop());
+                    }
+                    stack.push(token);
+                }
+            }
+            
+            while (!stack.isEmpty()) {
+                result.push(stack.pop());
+            }
+            
+            return result.join(' ');
+        }
+
+        function evalPostfix(tokens) {
+            const stack = new Stack();
+            
+            for (let token of tokens) {
+                if (isNumber(token)) {
+                    stack.push(parseInt(token));
+                } else if (token === 'N') {
+                    if (stack.isEmpty()) throw new Error("invalid expression");
+                    const val = stack.pop();
+                    stack.push(-val);
+                } else if (isOperator(token)) {
+                    if (stack.isEmpty()) throw new Error("invalid expression");
+                    const b = stack.pop();
+                    if (stack.isEmpty()) throw new Error("invalid expression");
+                    const a = stack.pop();
+                    
+                    let result;
+                    if (token === '+') result = a + b;
+                    else if (token === '-') result = a - b;
+                    else if (token === '*') result = a * b;
+                    else if (token === '/') {
+                        if (b === 0) throw new Error("division by zero");
+                        result = Math.floor(a / b);
+                    }
+                    stack.push(result);
+                }
+            }
+            
+            if (stack.isEmpty() || stack.items.length > 1) {
+                throw new Error("invalid expression");
+            }
+            
+            return stack.pop();
+        }
+
+        function evalInfix(tokens) {
+            if (!validateInfix(tokens)) {
+                throw new Error("invalid expression");
+            }
+            
+            const stack = new Stack();
+            const postfix = [];
+            
+            for (let token of tokens) {
+                if (isNumber(token)) {
+                    postfix.push(token);
+                } else if (token === '(') {
+                    stack.push(token);
+                } else if (token === ')') {
+                    while (!stack.isEmpty() && stack.peek() !== '(') {
+                        postfix.push(stack.pop());
+                    }
+                    if (!stack.isEmpty()) stack.pop();
+                } else if (isOperator(token)) {
+                    while (!stack.isEmpty() && stack.peek() !== '(' && 
+                           precedence(stack.peek()) >= precedence(token)) {
+                        postfix.push(stack.pop());
+                    }
+                    stack.push(token);
+                }
+            }
+            
+            while (!stack.isEmpty()) {
+                postfix.push(stack.pop());
+            }
+            
+            return evalPostfix(postfix);
+        }
+
+        function infixToPrefix(tokens) {
+            if (!validateInfix(tokens)) {
+                throw new Error("invalid expression");
+            }
+            
+            const reversed = [];
+            for (let i = tokens.length - 1; i >= 0; i--) {
+                if (tokens[i] === '(') reversed.push(')');
+                else if (tokens[i] === ')') reversed.push('(');
+                else reversed.push(tokens[i]);
+            }
+            
+            const stack = new Stack();
+            const postfix = [];
+            
+            for (let token of reversed) {
+                if (isNumber(token)) {
+                    postfix.push(token);
+                } else if (token === '(') {
+                    stack.push(token);
+                } else if (token === ')') {
+                    while (!stack.isEmpty() && stack.peek() !== '(') {
+                        postfix.push(stack.pop());
+                    }
+                    if (!stack.isEmpty()) stack.pop();
+                } else if (isOperator(token)) {
+                    while (!stack.isEmpty() && stack.peek() !== '(' && 
+                           precedence(stack.peek()) > precedence(token)) {
+                        postfix.push(stack.pop());
+                    }
+                    stack.push(token);
+                }
+            }
+            
+            while (!stack.isEmpty()) {
+                postfix.push(stack.pop());
+            }
+            
+            return postfix.reverse().join(' ');
+        }
+
+        function evalPrefix(tokens) {
+            const stack = new Stack();
+            
+            for (let i = tokens.length - 1; i >= 0; i--) {
+                const token = tokens[i];
+                if (isNumber(token)) {
+                    stack.push(parseInt(token));
+                } else if (token === 'N') {
+                    if (stack.isEmpty()) throw new Error("invalid expression");
+                    const val = stack.pop();
+                    stack.push(-val);
+                } else if (isOperator(token)) {
+                    if (stack.isEmpty()) throw new Error("invalid expression");
+                    const a = stack.pop();
+                    if (stack.isEmpty()) throw new Error("invalid expression");
+                    const b = stack.pop();
+                    
+                    let result;
+                    if (token === '+') result = a + b;
+                    else if (token === '-') result = a - b;
+                    else if (token === '*') result = a * b;
+                    else if (token === '/') {
+                        if (b === 0) throw new Error("division by zero");
+                        result = Math.floor(a / b);
+                    }
+                    stack.push(result);
+                }
+            }
+            
+            if (stack.isEmpty() || stack.items.length > 1) {
+                throw new Error("invalid expression");
+            }
+            
+            return stack.pop();
+        }
+
+        function processNegative(tokens) {
+            const processed = [];
+            for (let token of tokens) {
+                if (token.startsWith('-') && token.length > 1 && /^\d+$/.test(token.slice(1))) {
+                    processed.push(token.slice(1));
+                    processed.push('N');
+                } else {
+                    processed.push(token);
+                }
+            }
+            return processed;
+        }
+
+        function processExpression() {
+            const input = document.getElementById('inputExpression').value.trim();
+            const output = document.getElementById('output');
+            
+            if (!input) {
+                output.className = 'output-content error';
+                output.textContent = 'Error: 請輸入表達式';
+                return;
+            }
+            
+            try {
+                let tokens = input.split(/\s+/);
+                
+                if (selectedMode === 7) {
+                    tokens = processNegative(tokens);
+                }
+                
+                let result;
+                switch (selectedFunc) {
+                    case 1:
+                        result = infixToPostfix(tokens);
+                        break;
+                    case 2:
+                        result = evalPostfix(tokens);
+                        break;
+                    case 3:
+                        result = evalInfix(tokens);
+                        break;
+                    case 4:
+                        result = infixToPrefix(tokens);
+                        break;
+                    case 5:
+                        result = evalPrefix(tokens);
+                        break;
+                }
+                
+                output.className = 'output-content success';
+                output.textContent = result;
+            } catch (error) {
+                output.className = 'output-content error';
+                output.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('inputExpression').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                processExpression();
+            }
+        });
+    </script>
+</body>
+</html>
